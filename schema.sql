@@ -1,0 +1,44 @@
+-- Jalankan di Supabase > SQL Editor.
+-- Semua tabel memakai awalan kk_ sehingga aman dipakai di project yang sama dengan aplikasi lama.
+
+create table kk_settings (
+  id int primary key default 1 check (id = 1),
+  rate bigint not null default 3000,
+  org_name text, sign_by text, sign_ok text
+);
+insert into kk_settings default values;
+
+create table kk_categories (id bigint generated always as identity primary key, name text not null unique);
+insert into kk_categories (name) values ('Bahan makanan'),('Gas/LPG'),('Listrik & air'),('Transportasi'),('Sewa'),('Perawatan alat'),('Kebersihan'),('APD'),('Lainnya');
+
+create table kk_divisions (id bigint generated always as identity primary key, name text not null);
+create table kk_employees (
+  id bigint generated always as identity primary key, name text not null,
+  division_id bigint not null references kk_divisions(id) on delete cascade, wage bigint not null default 0
+);
+
+-- jumlah PM per hari (hanya hari yang diinput yang punya baris)
+create table kk_days (date date primary key, pm int);
+-- kehadiran; gaji disimpan per hari sehingga perubahan gaji tidak mengubah hari yang sudah tercatat
+create table kk_attendance (
+  date date not null, employee_id bigint not null references kk_employees(id) on delete cascade,
+  wage bigint not null, primary key (date, employee_id)
+);
+create table kk_expenses (
+  id bigint generated always as identity primary key, date date not null, name text not null,
+  category text not null default 'Lainnya', kind text not null check (kind in ('harian','mingguan','bulanan')),
+  amount bigint not null, note text, photo text
+);
+
+-- hanya pengguna yang login yang boleh membaca/menulis
+do $$ declare t text; begin
+  foreach t in array array['kk_settings','kk_categories','kk_divisions','kk_employees','kk_days','kk_attendance','kk_expenses'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "login_penuh" on %I for all to authenticated using (true) with check (true)', t);
+  end loop;
+end $$;
+
+-- penyimpanan foto nota (privat)
+insert into storage.buckets (id, name, public) values ('nota', 'nota', false) on conflict (id) do nothing;
+drop policy if exists "nota_login" on storage.objects;
+create policy "nota_login" on storage.objects for all to authenticated using (bucket_id = 'nota') with check (bucket_id = 'nota');
