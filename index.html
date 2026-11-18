@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keuangan Kita</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💚</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="app"></div>
+  <datalist id="names"></datalist>
+  <input type="file" id="photoInput" accept="image/*" hidden>
+  <noscript>Aktifkan JavaScript untuk memakai aplikasi ini.</noscript>
+  <script>
+    /* Diagnosa: supaya halaman tidak pernah kosong tanpa penjelasan */
+    (function () {
+      var app = document.getElementById('app');
+      function show(title, body) {
+        app.innerHTML = '<div style="max-width:580px;margin:10vh auto;padding:26px;background:#222227;color:#f3f3f6;border-radius:24px;font:14px/1.7 system-ui,sans-serif"><h2 style="margin:0 0 8px">' + title + '</h2>' + body + '</div>';
+      }
+      if (location.protocol === 'file:') {
+        show('Buka lewat alamat web', '<p>Aplikasi ini memakai modul JavaScript, jadi tidak bisa dibuka dengan klik dua kali pada <code>index.html</code>. Upload ke GitHub Pages, lalu buka alamat <code>https://...github.io/...</code>.</p>');
+        return;
+      }
+      function failed(src) {
+        show('Aplikasi gagal dimuat', '<p>' + (src ? 'File yang gagal dimuat: <code>' + src + '</code>' : 'Skrip utama tidak berjalan.') + '</p><ol><li>Pastikan folder <b>js</b>, <b>css</b>, dan <b>sql</b> ikut di-upload dengan nama persis sama (huruf kecil), satu level dengan <code>index.html</code>.</li><li>Pastikan koneksi internet tidak memblokir <code>cdn.jsdelivr.net</code>.</li><li>Tekan <b>Ctrl+F5</b>, lalu <b>F12 &rarr; Console</b> untuk melihat pesan error.</li></ol>');
+      }
+      window.addEventListener('error', function (e) { if (e.target && e.target.tagName === 'SCRIPT') failed(e.target.src); }, true);
+      setTimeout(function () { if (!app.children.length) failed(); }, 4000);
+    })();
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
