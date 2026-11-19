@@ -1,0 +1,69 @@
+/* Lapisan warna: kartu berwarna, ikon menu berwarna, latar bercahaya. Dimuat setelah components.css */
+
+body {
+  background:
+    radial-gradient(900px 520px at 8% -5%, rgba(200, 241, 105, .18), transparent 60%),
+    radial-gradient(820px 520px at 96% 0%, rgba(143, 123, 255, .26), transparent 60%),
+    radial-gradient(760px 520px at 55% 112%, rgba(255, 126, 214, .16), transparent 60%),
+    var(--bg);
+}
+.shell { background: linear-gradient(180deg, #1d1d24, #16161a); }
+
+/* menu samping: setiap halaman punya warna sendiri */
+.rail-link[data-route] { color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
+.rail-link[data-route].on { background: var(--c); color: var(--ink); box-shadow: 0 8px 22px -8px var(--c); }
+.rail-link[data-route="dashboard"] { --c: var(--lime); }
+.rail-link[data-route="daily"] { --c: #6f86ff; } .rail-link[data-route="daily"].on { color: #fff; }
+.rail-link[data-route="expenses"] { --c: var(--orange); }
+.rail-link[data-route="staff"] { --c: var(--pink); }
+.rail-link[data-route="report"] { --c: var(--purple); } .rail-link[data-route="report"].on { color: #fff; }
+.rail-link[data-route="settings"] { --c: var(--yellow); }
+.brand { background: linear-gradient(135deg, var(--lime), var(--yellow)); }
+
+/* tombol & navigasi bulan */
+.btn.primary { background: linear-gradient(135deg, var(--lime), #e6ff7a); box-shadow: 0 8px 20px -10px var(--lime); }
+.month-nav { background: linear-gradient(135deg, color-mix(in srgb, var(--purple) 35%, var(--card)), var(--card)); }
+.chips.tabs .chip.on { background: var(--purple); border-color: var(--purple); color: #fff; }
+.chips.tabs .chip { border-color: color-mix(in srgb, var(--purple) 40%, var(--line)); }
+
+/* kartu statistik berwarna */
+.stat.lime { background: linear-gradient(135deg, #d9ff80, #b4ea3c); color: var(--ink); }
+.stat.purple { background: linear-gradient(135deg, #a08cff, #5b45e0); color: #fff; }
+.stat.orange { background: linear-gradient(135deg, #ffb877, #ff7d3b); color: #2a1200; }
+.stat.pink { background: linear-gradient(135deg, #ff9fe6, #d94fc0); color: #fff; }
+.stat.neg { background: linear-gradient(135deg, #ff8f8f, #e03c4b); color: #fff; }
+.stat.lime .stat-l, .stat.purple .stat-l, .stat.orange .stat-l, .stat.pink .stat-l, .stat.neg .stat-l,
+.stat.lime .stat-f, .stat.purple .stat-f, .stat.orange .stat-f, .stat.pink .stat-f, .stat.neg .stat-f,
+.stat.lime .muted, .stat.purple .muted, .stat.orange .muted, .stat.pink .muted, .stat.neg .muted { color: inherit; opacity: .82; }
+.stat.neg .stat-v { color: #fff; }
+.stat.purple .mini rect, .stat.orange .mini rect, .stat.pink .mini rect, .stat.neg .mini rect { fill: rgba(255,255,255,.32); }
+.stat.purple .mini rect.hi, .stat.orange .mini rect.hi, .stat.pink .mini rect.hi, .stat.neg .mini rect.hi { fill: #fff; }
+.stat.orange .mini rect { fill: rgba(0,0,0,.18); } .stat.orange .mini rect.hi { fill: #2a1200; }
+.stat.pink .progress, .stat.purple .progress, .stat.orange .progress { background: rgba(0,0,0,.2); }
+.stat.pink .progress i, .stat.purple .progress i { background: #fff; }
+.card.blue { background: linear-gradient(160deg, #5f76ff, #3946d6); }
+
+/* judul kartu berpenanda warna */
+.main section.card > h3::before, .main section.card > .card-head > h3::before {
+  content: ""; display: inline-block; width: 6px; height: 18px; border-radius: 4px; margin-right: 10px; vertical-align: -3px; background: var(--bar, var(--lime));
+}
+.main section.card:nth-of-type(5n+1) { --bar: var(--lime); }
+.main section.card:nth-of-type(5n+2) { --bar: var(--purple); }
+.main section.card:nth-of-type(5n+3) { --bar: var(--orange); }
+.main section.card:nth-of-type(5n+4) { --bar: var(--pink); }
+.main section.card:nth-of-type(5n) { --bar: #6f86ff; }
+
+/* tabel */
+th { background: color-mix(in srgb, var(--purple) 16%, transparent); color: #d6cfff; }
+th:first-child { border-radius: 12px 0 0 12px; } th:last-child { border-radius: 0 12px 12px 0; }
+tfoot td { background: color-mix(in srgb, var(--lime) 17%, transparent); color: var(--lime); }
+tbody tr:hover td { background: color-mix(in srgb, var(--purple) 9%, transparent); }
+.progress i { background: linear-gradient(90deg, var(--lime), #e6ff7a); }
+.kv b { color: #fff; }
+.link { color: var(--lime); }
+
+/* kelompok pegawai: tiap divisi punya warna */
+.group { border-left: 4px solid var(--gc, var(--line)); border-color: color-mix(in srgb, var(--gc, var(--line)) 45%, var(--line)); border-left-color: var(--gc, var(--line)); }
+.group-head b { color: var(--gc, var(--text)); }
+.staff:has(input[type=checkbox]:checked) { background: color-mix(in srgb, var(--gc, var(--lime)) 15%, transparent); border-color: var(--gc, var(--lime)); }
+.staff input[type=checkbox] { accent-color: var(--gc, var(--lime)); }
