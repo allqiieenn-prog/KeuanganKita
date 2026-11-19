@@ -8,6 +8,7 @@ laporan hanya menampilkan hari yang sudah diinput, tanpa rata-rata atau pembagia
 index.html            halaman tunggal
 css/base.css          warna, reset, kerangka
 css/components.css    kartu, tombol, tabel, grafik, kalender, modal
+css/colors.css        lapisan warna (kartu berwarna, ikon menu berwarna, latar bercahaya)
 js/config.js          URL & key Supabase (isi sendiri)
 js/main.js            login, kerangka, router, penghubung event
 js/db.js              satu-satunya akses ke Supabase

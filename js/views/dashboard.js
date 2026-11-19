@@ -15,13 +15,13 @@ export function render() {
   const top = s.byCat.slice(0, 5), rest = sum(s.byCat.slice(5), (c) => c.v);
   const parts = [...top.map((c, i) => ({ n: c.name, v: c.v, c: PALETTE[i] })), ...(rest ? [{ n: 'Lainnya', v: rest, c: PALETTE[5] }] : [])];
   const pct = (v) => (T.out ? Math.round((v / T.out) * 100) : 0);
-  const kinds = [['Harian', T.harian], ['Mingguan', T.mingguan], ['Bulanan', T.bulanan], ['Gaji pegawai', T.wages]];
+  const kinds = [['Harian', T.harian, 'var(--lime)'], ['Mingguan', T.mingguan, 'var(--orange)'], ['Bulanan', T.bulanan, 'var(--purple)'], ['Gaji pegawai', T.wages, 'var(--pink)']];
 
   return `<div class="stats">
       ${stat('lime', 'Dana masuk', rp(T.income), `${T.pm} PM · ${T.days} hari`, miniBars(last.map((r) => r.income)))}
-      ${stat('', 'Pengeluaran', rp(T.out), `${s.entries.length} transaksi + gaji`, miniBars(last.map((r) => r.out)))}
-      ${stat(T.net < 0 ? 'neg' : '', 'Sisa dana', rp(T.net), 'Dana masuk − pengeluaran', '')}
-      ${stat('', 'Hari terisi', `${T.days} hari`, `dari ${daysIn(month)} hari kalender`, progress((T.days / daysIn(month)) * 100))}
+      ${stat('purple', 'Pengeluaran', rp(T.out), `${s.entries.length} transaksi + gaji`, miniBars(last.map((r) => r.out)))}
+      ${stat(T.net < 0 ? 'neg' : 'orange', 'Sisa dana', rp(T.net), 'Dana masuk − pengeluaran', '')}
+      ${stat('pink', 'Hari terisi', `${T.days} hari`, `dari ${daysIn(month)} hari kalender`, progress((T.days / daysIn(month)) * 100))}
     </div>
     <div class="split">
       <section class="card"><div class="card-head"><h3>Dana masuk &amp; pengeluaran per hari</h3></div>${barChart(s.rows.map((r) => ({ label: dm(r.date), a: r.income, b: r.out })))}</section>
@@ -29,7 +29,7 @@ export function render() {
     </div>
     <div class="trio">
       <section class="card"><h3>Pengeluaran per kategori</h3>${parts.length ? `<div class="donut-wrap">${donut(parts, ['Total', rp(T.out)])}<ul class="legend-list">${parts.map((p) => `<li><i class="dot" style="background:${p.c}"></i><span>${esc(p.n)}</span><b>${pct(p.v)}%</b></li>`).join('')}</ul></div>` : empty('Belum ada pengeluaran.')}</section>
-      <section class="card"><h3>Rincian jenis</h3>${kinds.map(([l, v]) => `<div class="bar-row"><div class="kv"><span>${l}</span><b>${rp(v)}</b></div>${progress(pct(v))}</div>`).join('')}</section>
+      <section class="card"><h3>Rincian jenis</h3>${kinds.map(([l, v, c]) => `<div class="bar-row"><div class="kv"><span>${l}</span><b>${rp(v)}</b></div>${progress(pct(v), c)}</div>`).join('')}</section>
       <section class="card"><h3>Saldo kumulatif</h3>${lineChart(s.rows.map((r) => ({ label: dm(r.date), v: r.saldo })))}<h4>Transaksi terbaru</h4>
         <ul class="recent">${s.entries.slice(0, 5).map((e) => `<li><div><b>${esc(e.name)}</b><small>${dm(e.date)} · ${esc(e.category)}</small></div><div>${rp(e.amount)}${badge(e.kind)}</div></li>`).join('') || empty('Belum ada transaksi.')}</ul></section>
     </div>`;

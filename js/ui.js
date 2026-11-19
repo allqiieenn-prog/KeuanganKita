@@ -106,7 +106,7 @@ export function miniBars(values) {
   return `<svg viewBox="0 0 80 36" class="mini">${v.map((n, i) => `<rect x="${i * w + 1}" y="${36 - Math.max(3, (n / max) * 34)}" width="${w - 3}" height="${Math.max(3, (n / max) * 34)}" rx="3" class="${i === v.length - 1 ? 'hi' : ''}"/>`).join('')}</svg>`;
 }
 
-export const progress = (pct, cls = '') => `<div class="progress ${cls}"><i style="width:${Math.min(100, Math.max(0, pct))}%"></i></div>`;
+export const progress = (pct, color = '') => `<div class="progress"><i style="width:${Math.min(100, Math.max(0, pct))}%;${color ? `background:${color}` : ''}"></i></div>`;
 
 /* ---------- kalender bulanan ---------- */
 export function calendar({ month, selected, filled }) {

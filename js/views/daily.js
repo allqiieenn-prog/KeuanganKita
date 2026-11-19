@@ -3,7 +3,7 @@ import { store } from '../store.js';
 import { db } from '../db.js';
 import { summarize } from '../calc.js';
 import { expenseForm } from './expenses.js';
-import { table, badge, toast } from '../ui.js';
+import { table, badge, toast, PALETTE } from '../ui.js';
 import { esc, rp, dm, num, thousands, addDays, dateLabel, $, $$ } from '../utils.js';
 
 export const title = 'Input harian';
@@ -15,9 +15,9 @@ export function render() {
   const day = summarize(data, date.slice(0, 7)).rows.find((r) => r.date === date) || { pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, out: 0, net: 0 };
   const entries = data.expenses.filter((e) => e.date === date);
 
-  const groups = data.divisions.map((v) => {
+  const groups = data.divisions.map((v, gi) => {
     const people = data.employees.filter((e) => e.division_id === v.id);
-    return `<div class="group"><div class="group-head"><b>${esc(v.name)}</b><button type="button" class="btn ghost sm" data-act="toggleDivision" data-id="${v.id}">Pilih semua</button></div>
+    return `<div class="group" style="--gc:${PALETTE[gi % PALETTE.length]}"><div class="group-head"><b>${esc(v.name)}</b><button type="button" class="btn ghost sm" data-act="toggleDivision" data-id="${v.id}">Pilih semua</button></div>
       ${people.map((e) => { const a = att.get(e.id); return `<label class="staff"><input type="checkbox" name="p${e.id}" data-div="${v.id}" ${a ? 'checked' : ''}><span>${esc(e.name)}</span><input class="money" name="w${e.id}" value="${thousands(a ? a.wage : e.wage)}" title="Gaji hari ini"></label>`; }).join('') || '<p class="muted">Belum ada pegawai di divisi ini.</p>'}</div>`;
   }).join('') || '<p class="muted">Tambahkan divisi dan pegawai dulu di menu Pegawai.</p>';
 
