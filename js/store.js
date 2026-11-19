@@ -3,7 +3,7 @@ import { db } from './db.js';
 import { today, monthOf } from './utils.js';
 
 function emptyData() {
-  return { settings: { id: 1, rate: 3000 }, categories: [], divisions: [], employees: [], days: [], attendance: [], expenses: [] };
+  return { settings: { id: 1, rate: 3000 }, categories: [], divisions: [], employees: [], days: [], attendance: [], expenses: [], items: [] };
 }
 
 export const store = {

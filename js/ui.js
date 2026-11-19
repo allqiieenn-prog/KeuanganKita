@@ -23,9 +23,9 @@ export function fieldHTML(f, values = {}) {
     if (val !== '' && !opts.some((o) => String(o[0]) === String(val))) opts = [...opts, [val, val]]; // nilai lama yang sudah tidak ada di daftar
     input = `<select name="${f.n}">${opts.map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(val) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
   } else if (f.t === 'money') {
-    input = `<input name="${f.n}" class="money" inputmode="numeric" value="${val === '' ? '' : thousands(val)}" ${f.req ? 'required' : ''} autocomplete="off">`;
+    input = `<input name="${f.n}" class="money" inputmode="numeric" value="${val === '' ? '' : thousands(val)}" ${f.calc ? 'data-calc' : ''} ${f.req ? 'required' : ''} autocomplete="off">`;
   } else {
-    input = `<input name="${f.n}" type="${f.t || 'text'}" value="${esc(val)}" ${f.t === 'number' ? 'min="0" step="any"' : ''} ${f.list ? `list="${f.list}"` : ''} ${f.af ? 'data-autofill' : ''} ${f.req ? 'required' : ''} autocomplete="off">`;
+    input = `<input name="${f.n}" type="${f.t || 'text'}" value="${esc(val)}" ${f.t === 'number' ? 'min="0" step="any"' : ''} ${f.list ? `list="${f.list}"` : ''} ${f.af ? 'data-autofill' : ''} ${f.calc ? 'data-calc' : ''} ${f.req ? 'required' : ''} autocomplete="off">`;
   }
   return `<label>${f.l}${input}</label>`;
 }

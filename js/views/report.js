@@ -4,7 +4,7 @@ import { summarize } from '../calc.js';
 import { exportExcel, printReport } from '../export.js';
 import { table, badge, donut, empty } from '../ui.js';
 import { buildModel, docHTML, slideInner, pct, DOC_CSS, SLIDE_COUNT } from './report-parts.js';
-import { esc, rp, dm, sum, monthLabel, dateLabel, $ } from '../utils.js';
+import { esc, rp, dm, sum, monthLabel, dateLabel, fmtQty, $ } from '../utils.js';
 
 export const title = 'Laporan';
 
@@ -61,7 +61,7 @@ const perDay = (s) => table(
 
 const perKind = (s) => ['harian', 'mingguan', 'bulanan'].map((k) => {
   const list = s.entries.filter((e) => e.kind === k).sort((a, b) => (a.date < b.date ? -1 : 1));
-  return `<section class="card"><h3>Pengeluaran ${k} ${badge(k)}</h3>${table([{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Jumlah', cls: 'num' }], list.map((e) => [dm(e.date), esc(e.name), esc(e.category), rp(e.amount)]), { foot: ['Subtotal', '', '', rp(sum(list, (e) => e.amount))], emptyText: `Belum ada pengeluaran ${k}.` })}</section>`;
+  return `<section class="card"><h3>Pengeluaran ${k} ${badge(k)}</h3>${table([{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Qty × harga' }, { h: 'Jumlah', cls: 'num' }], list.map((e) => [dm(e.date), esc(e.name), esc(e.category), e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '-', rp(e.amount)]), { foot: ['Subtotal', '', '', '', rp(sum(list, (e) => e.amount))], emptyText: `Belum ada pengeluaran ${k}.` })}</section>`;
 }).join('');
 
 const perCategory = (s) => `<div class="two"><section class="card"><h3>Per kategori</h3>${table([{ h: 'Kategori' }, { h: 'Total', cls: 'num' }, { h: '%', cls: 'num' }], s.byCat.map((c) => [esc(c.name), rp(c.v), pct(c.v, s.totals.out)]), { foot: ['Total', rp(s.totals.out), ''] })}</section>

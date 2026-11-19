@@ -33,7 +33,7 @@ export async function exportExcel(s = summarize(store.data, store.month), label 
     });
     const style = (cell, i) => {
       const c = cols[i];
-      if (c.f === 'rp') cell.numFmt = RP; else if (c.f === 'n') cell.numFmt = '#,##0';
+      if (c.f === 'rp') cell.numFmt = RP; else if (c.f === 'n') cell.numFmt = '#,##0'; else if (c.f === 'q') cell.numFmt = '#,##0.##';
       cell.alignment = { horizontal: c.f === 'c' ? 'center' : i && c.f ? 'right' : 'left' };
     };
     rows.forEach((r, ri) => {
@@ -61,8 +61,8 @@ export async function exportExcel(s = summarize(store.data, store.month), label 
     s.rows.map((r) => [dmy(r.date), r.pm, r.staff, r.income, r.harian, r.mingguan, r.bulanan, r.wages, r.out, r.net, r.saldo]),
     ['Total', T.pm, '', T.income, T.harian, T.mingguan, T.bulanan, T.wages, T.out, T.net, '']);
   const list = [...s.entries].sort((a, b) => (a.date < b.date ? -1 : 1));
-  sheet('Pengeluaran', 'Daftar Pengeluaran', [{ h: 'Tanggal', w: 13 }, { h: 'Nama', w: 30 }, { h: 'Kategori', w: 20 }, { h: 'Jenis', w: 13, f: 'c' }, { h: 'Jumlah', w: 18, f: 'rp' }, { h: 'Catatan', w: 30 }],
-    list.map((e) => [dmy(e.date), e.name, e.category, e.kind, +e.amount, e.note || '']), ['Total', '', '', '', sum(list, (e) => e.amount), '']);
+  sheet('Pengeluaran', 'Daftar Pengeluaran', [{ h: 'Tanggal', w: 13 }, { h: 'Nama', w: 30 }, { h: 'Kategori', w: 20 }, { h: 'Jenis', w: 13, f: 'c' }, { h: 'Qty', w: 10, f: 'q' }, { h: 'Satuan', w: 12 }, { h: 'Harga satuan', w: 16, f: 'rp' }, { h: 'Total', w: 18, f: 'rp' }, { h: 'Catatan', w: 30 }],
+    list.map((e) => [dmy(e.date), e.name, e.category, e.kind, e.qty ? +e.qty : '', e.unit || '', e.unit_price ? +e.unit_price : '', +e.amount, e.note || '']), ['Total', '', '', '', '', '', '', sum(list, (e) => e.amount), '']);
   sheet('Kategori', 'Pengeluaran Per Kategori', [{ h: 'Kategori', w: 30 }, { h: 'Total', w: 20, f: 'rp' }], s.byCat.map((c) => [c.name, c.v]), ['Total', T.out]);
   sheet('Gaji Pegawai', 'Gaji Pegawai', [{ h: 'Pegawai', w: 28 }, { h: 'Divisi', w: 20 }, { h: 'Hadir (hari)', w: 14, f: 'n' }, { h: 'Total gaji', w: 20, f: 'rp' }],
     s.byEmp.map((e) => [e.name, store.data.divisions.find((d) => d.id === e.division_id)?.name || '-', e.days, e.total]), ['Total', '', sum(s.byEmp, (e) => e.days), T.wages]);

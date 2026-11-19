@@ -9,6 +9,7 @@ export const sum = (arr, fn = (x) => x) => arr.reduce((t, x) => t + (+fn(x) || 0
 export const thousands = (n) => String(Math.round(+n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 export const rp = (n) => (n < 0 ? '-' : '') + 'Rp' + thousands(Math.abs(n));
 export const num = (s) => +String(s ?? '').replace(/\D/g, '') || 0; // "1.500.000" -> 1500000
+export const fmtQty = (n) => (+(+n).toFixed(2)).toLocaleString('id-ID');
 export const short = (v) => (v >= 1e6 ? (v / 1e6).toFixed(1).replace('.', ',') + ' jt' : v >= 1e3 ? Math.round(v / 1e3) + ' rb' : String(Math.round(v)));
 
 /* ---------- tanggal ---------- */

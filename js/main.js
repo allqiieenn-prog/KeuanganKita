@@ -7,6 +7,7 @@ import { formatMoneyInput } from './money.js';
 import * as dashboard from './views/dashboard.js';
 import * as daily from './views/daily.js';
 import * as expenses from './views/expenses.js';
+import * as items from './views/items.js';
 import * as staff from './views/staff.js';
 import * as report from './views/report.js';
 import * as settings from './views/settings.js';
@@ -16,6 +17,7 @@ const ROUTES = {
   dashboard: { view: dashboard, icon: 'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z' },
   daily: { view: daily, icon: 'M7 3v4M17 3v4M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z' },
   expenses: { view: expenses, icon: 'M3 7h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12M16 14h3' },
+  items: { view: items, icon: 'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8' },
   staff: { view: staff, icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8' },
   report: { view: report, icon: 'M4 20V10M10 20V4M16 20v-8M22 20H2' },
   settings: { view: settings, icon: 'M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M14 4v4M8 10v4M16 16v4' },
@@ -66,7 +68,7 @@ function render() {
 }
 
 async function boot() {
-  try { await refresh(); } catch (e) { return showMessage(`<h2>Gagal memuat data</h2><p class="muted">${e.message}</p><p class="muted">Pastikan <code>sql/schema.sql</code> sudah dijalankan di Supabase.</p>`); }
+  try { await refresh(); } catch (e) { return showMessage(`<h2>Gagal memuat data</h2><p class="muted">${e.message}</p><p class="muted">Pastikan <code>sql/schema.sql</code> (instalasi baru) atau <code>sql/update-v3.sql</code> (pembaruan) sudah dijalankan di Supabase.</p>`); }
   store.rerender = render;
   shell(); render();
 }
@@ -88,7 +90,10 @@ document.addEventListener('change', (e) => {
   else if (t.matches('[data-autofill]')) expenses.autofill(t.form);
   else if (t.id === 'photoInput' && t.files[0]) guard(() => expenses.uploadPhoto(t.files[0]));
 });
-document.addEventListener('input', (e) => { if (e.target.classList.contains('money')) formatMoneyInput(e.target); });
+document.addEventListener('input', (e) => {
+  if (e.target.classList.contains('money')) formatMoneyInput(e.target);
+  if (e.target.matches('[data-calc]')) expenses.calcAmount(e.target.form); // total = qty × harga
+});
 window.addEventListener('hashchange', render);
 
 (async () => {

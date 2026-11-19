@@ -24,10 +24,10 @@ export async function deleteEntity(key, id, message = 'Hapus data ini?') {
 }
 
 /* Jendela ubah data berdasarkan definisi kolom */
-export function editModal(key, fields, id, title, note = '') {
+export function editModal(key, fields, id, title, note = '', normalize = (v) => v) {
   const item = store.data[key].find((x) => x.id === id);
   modal({
     title, body: fieldsHTML(fields, item) + (note ? `<p class="muted note">${note}</p>` : ''),
-    onSubmit: async (form) => { await updateEntity(key, id, readFields(form, fields)); store.rerender(); toast('Perubahan tersimpan'); },
+    onSubmit: async (form) => { await updateEntity(key, id, normalize(readFields(form, fields))); store.rerender(); toast('Perubahan tersimpan'); },
   });
 }

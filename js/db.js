@@ -8,7 +8,7 @@ const sb = configured ? createClient(CONFIG.url, CONFIG.key) : null;
 /* nama kunci di aplikasi -> nama tabel di database */
 const TABLE = {
   settings: 'kk_settings', categories: 'kk_categories', divisions: 'kk_divisions', employees: 'kk_employees',
-  days: 'kk_days', attendance: 'kk_attendance', expenses: 'kk_expenses',
+  days: 'kk_days', attendance: 'kk_attendance', expenses: 'kk_expenses', items: 'kk_items',
 };
 const ok = (r) => { if (r.error) throw r.error; return r.data; };
 

@@ -32,12 +32,20 @@ create table kk_attendance (
 create table kk_expenses (
   id bigint generated always as identity primary key, date date not null, name text not null,
   category text not null default 'Lainnya', kind text not null check (kind in ('harian','mingguan','bulanan')),
-  amount bigint not null, note text, photo text
+  amount bigint not null, note text, photo text,
+  qty numeric, unit text, unit_price bigint -- jumlah barang × harga satuan (opsional)
 );
+
+-- data barang: nama, satuan, harga satuan (dipakai berulang saat input pengeluaran)
+create table kk_items (
+  id bigint generated always as identity primary key, name text not null,
+  unit text, price bigint not null default 0, category text not null default 'Lainnya'
+);
+create unique index kk_items_name on kk_items (lower(name));
 
 -- hanya pengguna yang login yang boleh membaca/menulis
 do $$ declare t text; begin
-  foreach t in array array['kk_settings','kk_categories','kk_divisions','kk_employees','kk_days','kk_attendance','kk_expenses'] loop
+  foreach t in array array['kk_settings','kk_categories','kk_divisions','kk_employees','kk_days','kk_attendance','kk_expenses','kk_items'] loop
     execute format('alter table %I enable row level security', t);
     execute format('create policy "login_penuh" on %I for all to authenticated using (true) with check (true)', t);
   end loop;
