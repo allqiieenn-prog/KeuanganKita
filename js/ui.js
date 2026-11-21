@@ -17,6 +17,7 @@ export function toast(msg) {
 /* kolom: { n: nama, l: label, t: text|number|money|date|select, opts, req, int, list, af } */
 export function fieldHTML(f, values = {}) {
   const val = values[f.n] ?? f.def ?? '';
+  if (f.t === 'check') return `<label class="check"><input type="checkbox" name="${f.n}" ${val ? 'checked' : ''}> ${f.l}</label>`;
   let input;
   if (f.t === 'select') {
     let opts = typeof f.opts === 'function' ? f.opts() : f.opts;
@@ -34,6 +35,7 @@ export const fieldsHTML = (fields, values) => fields.map((f) => fieldHTML(f, val
 export function readFields(form, fields) {
   const out = {};
   for (const f of fields) {
+    if (f.t === 'check') { out[f.n] = form.elements[f.n].checked; continue; }
     const raw = form.elements[f.n].value;
     out[f.n] = f.t === 'money' ? num(raw) : f.t === 'number' ? +raw || 0 : f.int ? +raw : raw.trim();
   }
@@ -109,9 +111,9 @@ export function miniBars(values) {
 export const progress = (pct, color = '') => `<div class="progress"><i style="width:${Math.min(100, Math.max(0, pct))}%;${color ? `background:${color}` : ''}"></i></div>`;
 
 /* ---------- kalender bulanan ---------- */
-export function calendar({ month, selected, filled }) {
+export function calendar({ month, selected, filled = new Set(), inactive = new Set(), action = 'pickDate' }) {
   const [y, m] = month.split('-').map(Number), off = (new Date(y, m - 1, 1).getDay() + 6) % 7, now = today();
   const days = Array.from({ length: daysIn(month) }, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`);
   return `<div class="cal">${['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((d) => `<span class="cal-h">${d}</span>`).join('')}
-    ${'<span></span>'.repeat(off)}${days.map((d) => `<button class="cal-d ${filled.has(d) ? 'has' : ''} ${d === now ? 'today' : ''} ${d === selected ? 'sel' : ''}" data-act="pickDate" data-date="${d}">${+d.slice(8)}</button>`).join('')}</div>`;
+    ${'<span></span>'.repeat(off)}${days.map((d) => `<button class="cal-d ${filled.has(d) ? 'has' : ''} ${inactive.has(d) ? 'off' : ''} ${d === now ? 'today' : ''} ${d === selected ? 'sel' : ''}" data-act="${action}" data-date="${d}">${+d.slice(8)}</button>`).join('')}</div>`;
 }

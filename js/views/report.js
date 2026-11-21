@@ -41,7 +41,7 @@ function dashboard(m, cur) {
   const chip = (act, key, val, label, on) => `<button class="chip ${on ? 'on' : ''}" data-act="${act}" data-n="${val}">${label}</button>`;
   return `<section class="card"><h3>Ringkasan · ${cur.label}</h3>
       <p>Dana masuk dari PM yang diinput <b>${rp(income)}</b>. Pengeluaran tercatat <b>${rp(total)}</b> (${pct(total, income)} dari dana masuk), sisa <b>${rp(sisa)}</b>.</p>
-      <p class="muted note">Dihitung dari ${T.days} hari yang sudah diinput (${T.pm} PM). Tanpa rata-rata.</p></section>
+      <p class="muted note">Dihitung dari ${T.days} hari yang sudah diinput (${T.pm} PM). Biaya mingguan/bulanan dibagi rata ke hari aktif dan masuk pada hari yang sudah terisi.${T.pending > 0 ? ` Belum terbagi (hari belum terisi): <b>${rp(T.pending)}</b>.` : ''}</p></section>
     <div class="stats">${statCard('Dana masuk', rp(income), `${T.pm} PM · ${T.days} hari`, 'lime')}${statCard('Total pengeluaran', rp(total), `${items.length} komponen biaya`, 'purple')}${statCard('Sisa dana', rp(sisa), sisa < 0 ? 'Melebihi dana masuk' : 'Masih tersedia', sisa < 0 ? 'neg' : 'orange')}${statCard('Gaji pegawai', rp(T.wages), `${pct(T.wages, total)} dari pengeluaran`, 'pink')}</div>
     <div class="stats">${clusters.map((c) => `<div class="card" style="border-left:6px solid ${c.c};background:linear-gradient(135deg,color-mix(in srgb,${c.c} 24%,var(--card)),var(--card))"><small class="muted"><b>KLASTER ${c.k} • ${c.n.toUpperCase()}</b></small><b class="stat-v">${pct(c.amt, total)}</b><b>${rp(c.amt)}</b>
       <small class="muted">${esc([...c.list].sort((a, b) => b.amt - a.amt).slice(0, 3).map((x) => x.name).join(', ') || 'Belum ada data')}</small></div>`).join('')}</div>
@@ -61,7 +61,7 @@ const perDay = (s) => table(
 
 const perKind = (s) => ['harian', 'mingguan', 'bulanan'].map((k) => {
   const list = s.entries.filter((e) => e.kind === k).sort((a, b) => (a.date < b.date ? -1 : 1));
-  return `<section class="card"><h3>Pengeluaran ${k} ${badge(k)}</h3>${table([{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Qty × harga' }, { h: 'Jumlah', cls: 'num' }], list.map((e) => [dm(e.date), esc(e.name), esc(e.category), e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '-', rp(e.amount)]), { foot: ['Subtotal', '', '', '', rp(sum(list, (e) => e.amount))], emptyText: `Belum ada pengeluaran ${k}.` })}</section>`;
+  return `<section class="card"><h3>Pengeluaran ${k} ${badge(k)}</h3>${table([{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Qty × harga' }, { h: 'Total input', cls: 'num' }, { h: 'Masuk laporan', cls: 'num' }], list.map((e) => [dm(e.date), `${esc(e.name)}${k !== 'harian' ? `<br><small class="muted">${s.plan.has(e.id) ? `Dibagi ke ${s.plan.get(e.id).dates.length} hari aktif` : 'Dicatat di tanggalnya'}</small>` : ''}`, esc(e.category), e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '-', rp(e.amount), rp(s.counted[e.id])]), { foot: ['Subtotal', '', '', '', rp(sum(list, (e) => e.amount)), rp(sum(list, (e) => s.counted[e.id]))], emptyText: `Belum ada pengeluaran ${k}.` })}</section>`;
 }).join('');
 
 const perCategory = (s) => `<div class="two"><section class="card"><h3>Per kategori</h3>${table([{ h: 'Kategori' }, { h: 'Total', cls: 'num' }, { h: '%', cls: 'num' }], s.byCat.map((c) => [esc(c.name), rp(c.v), pct(c.v, s.totals.out)]), { foot: ['Total', rp(s.totals.out), ''] })}</section>

@@ -21,6 +21,7 @@ export const addDays = (d, n) => { const x = new Date(d + 'T00:00'); x.setDate(x
 export const monthOf = (d) => d.slice(0, 7);
 export const shiftMonth = (m, n) => { const [y, o] = m.split('-').map(Number); return iso(new Date(y, o - 1 + n, 1)).slice(0, 7); };
 export const daysIn = (m) => { const [y, o] = m.split('-').map(Number); return new Date(y, o, 0).getDate(); };
+export const monthDays = (m) => Array.from({ length: daysIn(m) }, (_, i) => `${m}-${String(i + 1).padStart(2, '0')}`);
 export const dm = (d) => `${d.slice(8)}/${d.slice(5, 7)}`;
 export const monthLabel = (m) => `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
 export const dateLabel = (d) => `${+d.slice(8)} ${MONTHS[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`;

@@ -3,6 +3,7 @@
 import { store } from '../store.js';
 import { db } from '../db.js';
 import { createEntity, deleteEntity, editModal } from '../crud.js';
+import { activeChecker, spreadDates } from '../calc.js';
 import { fieldsHTML, readFields, table, badge, toast } from '../ui.js';
 import { esc, rp, dm, sum, shrinkImage, $, thousands, num, fmtQty } from '../utils.js';
 
@@ -19,6 +20,7 @@ export const expenseFields = () => [
   { n: 'category', l: 'Kategori', t: 'select', opts: () => store.data.categories.map((c) => [c.name, c.name]) },
   { n: 'kind', l: 'Jenis', t: 'select', opts: KINDS },
   { n: 'note', l: 'Catatan (opsional)' },
+  { n: 'spread', l: 'Bagi rata ke hari aktif (untuk jenis mingguan / bulanan)', t: 'check', def: true },
 ];
 
 /* nilai kosong disimpan sebagai null */
@@ -58,20 +60,26 @@ export function autofill(form) {
 let filter = 'all';
 let photoTarget = null;
 
-const detail = (e) => [e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '', esc(e.note || '')].filter(Boolean).join(' · ');
+/* keterangan pembagian untuk jenis mingguan / bulanan */
+const spreadNote = (e, isActive) => {
+  if (e.kind === 'harian') return '';
+  const n = spreadDates(e, isActive).length;
+  return n ? `Dibagi ke ${n} hari aktif (${rp(e.amount / n)}/hari)` : 'Dicatat di tanggalnya';
+};
+const detail = (e, isActive) => [e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '', spreadNote(e, isActive), esc(e.note || '')].filter(Boolean).join(' · ');
 
 export function render() {
-  const { data, month } = store;
+  const { data, month } = store, isActive = activeChecker(data);
   const list = data.expenses.filter((e) => e.date.startsWith(month) && (filter === 'all' || e.kind === filter)).sort((a, b) => (a.date < b.date ? 1 : -1));
   const photoBtns = (e) => (e.photo
     ? `<button class="link" data-act="viewPhoto" data-id="${e.id}">Lihat</button> <button class="link muted" data-act="photo" data-id="${e.id}">Ganti</button>`
     : `<button class="link" data-act="photo" data-id="${e.id}">+ Foto</button>`);
   const rows = list.map((e) => [
-    dm(e.date), `<b>${esc(e.name)}</b>${detail(e) ? `<br><small class="muted">${detail(e)}</small>` : ''}`, esc(e.category), badge(e.kind), rp(e.amount), photoBtns(e),
+    dm(e.date), `<b>${esc(e.name)}</b>${detail(e, isActive) ? `<br><small class="muted">${detail(e, isActive)}</small>` : ''}`, esc(e.category), badge(e.kind), rp(e.amount), photoBtns(e),
     `<button class="link" data-act="editExpense" data-id="${e.id}">Ubah</button> <button class="link danger" data-act="deleteExpense" data-id="${e.id}">Hapus</button>`,
   ]);
   const cols = [{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Jenis' }, { h: 'Total', cls: 'num' }, { h: 'Nota' }, { h: '' }];
-  return `<section class="card"><h3>Tambah pengeluaran</h3><p class="muted note">Pilih barang dari <a href="#/items" class="link">Data barang</a> agar satuan &amp; harga terisi otomatis. Total = jumlah barang × harga satuan.</p>${expenseForm(store.date)}</section>
+  return `<section class="card"><h3>Tambah pengeluaran</h3><p class="muted note">Pilih barang dari <a href="#/items" class="link">Data barang</a> agar satuan &amp; harga terisi otomatis. Total = jumlah barang × harga satuan. Pengeluaran <b>mingguan</b> dibagi rata ke hari aktif pada minggu itu, <b>bulanan</b> ke hari aktif pada bulan itu (atur hari aktif di Pengaturan atau Input harian).</p>${expenseForm(store.date)}</section>
     <section class="card"><div class="card-head"><h3>Daftar pengeluaran</h3>
       <div class="chips">${[['all', 'Semua'], ...KINDS].map(([k, l]) => `<button class="chip ${filter === k ? 'on' : ''}" data-act="setFilter" data-k="${k}">${l}</button>`).join('')}</div></div>
       ${table(cols, rows, { foot: ['Total', '', '', '', rp(sum(list, (e) => e.amount)), '', ''], emptyText: 'Belum ada pengeluaran pada filter ini.' })}</section>`;

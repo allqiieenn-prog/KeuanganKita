@@ -1,7 +1,7 @@
 /* Input harian: jumlah PM, pegawai yang masuk (klik nama), gaji hari itu, dan pengeluaran hari itu */
 import { store } from '../store.js';
 import { db } from '../db.js';
-import { summarize } from '../calc.js';
+import { summarize, activeChecker, defaultActive } from '../calc.js';
 import { expenseForm } from './expenses.js';
 import { table, badge, toast, PALETTE } from '../ui.js';
 import { esc, rp, dm, num, thousands, addDays, dateLabel, $, $$ } from '../utils.js';
@@ -10,7 +10,7 @@ export const title = 'Input harian';
 
 export function render() {
   const { data, date } = store;
-  const dayRow = data.days.find((x) => x.date === date);
+  const dayRow = data.days.find((x) => x.date === date), isAct = activeChecker(data)(date);
   const att = new Map(data.attendance.filter((a) => a.date === date).map((a) => [a.employee_id, a]));
   const day = summarize(data, date.slice(0, 7)).rows.find((r) => r.date === date) || { pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, out: 0, net: 0 };
   const entries = data.expenses.filter((e) => e.date === date);
@@ -27,13 +27,14 @@ export function render() {
       <div class="date-nav"><button type="button" class="btn icon" data-act="shiftDate" data-n="-1">‹</button>
         <input type="date" name="date" value="${date}" data-change="setDate"><button type="button" class="btn icon" data-act="shiftDate" data-n="1">›</button></div>
       <label>Jumlah PM hari ini<input name="pm" type="number" min="0" value="${dayRow?.pm ?? ''}" placeholder="0"></label>
+      <label class="check"><input type="checkbox" name="active" ${isAct ? 'checked' : ''}> Hari aktif (hapus centang jika libur / nonaktif)</label>
       <h4>Pegawai yang masuk</h4><p class="muted note">Klik nama untuk menandai hadir. Gaji bisa disesuaikan per hari.</p>${groups}
       <div class="actions"><button class="btn primary">Simpan data ${dm(date)}</button><button type="button" class="btn ghost" data-act="copyPrev">Salin dari kemarin</button></div>
     </form>
     <div>
       <section class="card"><h3>${dateLabel(date)}</h3>
         ${line('Dana masuk (' + day.pm + ' PM)', rp(day.income))}${line('Pengeluaran harian', rp(day.harian))}${line('Pengeluaran mingguan', rp(day.mingguan))}${line('Pengeluaran bulanan', rp(day.bulanan))}${line('Gaji pegawai', rp(day.wages))}
-        ${line('Sisa hari ini', `<span class="${day.net < 0 ? 'neg' : 'pos'}">${rp(day.net)}</span>`)}<p class="muted note">Angka ini menyesuaikan setelah data disimpan.</p></section>
+        ${line('Sisa hari ini', `<span class="${day.net < 0 ? 'neg' : 'pos'}">${rp(day.net)}</span>`)}<p class="muted note">Angka ini menyesuaikan setelah data disimpan.${isAct ? '' : ' Hari ini nonaktif, jadi tidak ikut pembagian biaya mingguan/bulanan.'}</p></section>
       <section class="card"><h3>Tambah pengeluaran ${dm(date)}</h3>${expenseForm(date)}
         ${table([{ h: 'Nama' }, { h: 'Jenis' }, { h: 'Jumlah', cls: 'num' }], entries.map((e) => [esc(e.name), badge(e.kind), rp(e.amount)]), { emptyText: 'Belum ada pengeluaran hari ini.' })}</section>
     </div></div>`;
@@ -42,7 +43,8 @@ export function render() {
 export const forms = {
   async day(form) {
     const date = form.elements.date.value, pm = form.elements.pm.value, { data } = store;
-    const [dayRow] = await db.upsert('days', [{ date, pm: pm === '' ? null : +pm }], 'date');
+    const want = form.elements.active.checked, override = want === defaultActive(data, date) ? null : want; // null = ikut hari kerja rutin
+    const [dayRow] = await db.upsert('days', [{ date, pm: pm === '' ? null : +pm, active: override }], 'date');
     const present = data.employees.filter((e) => form.elements['p' + e.id]?.checked).map((e) => ({ date, employee_id: e.id, wage: num(form.elements['w' + e.id].value) }));
     await db.removeWhere('attendance', 'date', date);
     const saved = present.length ? await db.insert('attendance', present) : [];

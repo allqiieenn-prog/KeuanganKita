@@ -21,6 +21,7 @@ js/export.js          Excel & cetak PDF
 js/clusters.js        klaster laporan (A-D)
 js/views/*.js         halaman: dashboard, daily, expenses, items, staff, report (+report-parts), settings
 sql/schema.sql        tabel database (instalasi baru)
+sql/update-v4.sql     pembaruan: hari aktif/nonaktif + pembagian biaya mingguan/bulanan
 sql/update-v3.sql     pembaruan: data barang + qty pengeluaran
 sql/update-v2.sql     pembaruan untuk yang sudah menjalankan schema.sql sebelumnya
 sql/migrate-from-old.sql  menyalin data dari aplikasi lama ke tabel kk_ (project Supabase yang sama)
@@ -41,6 +42,8 @@ Tabel memakai awalan `kk_`, jadi tidak bentrok dengan aplikasi versi lama di pro
   Tombol "Salin dari kemarin" mengisi formulir dari hari sebelumnya.
 - **Data barang**: isi nama, satuan, dan harga satuan sekali. Di Pengeluaran, pilih nama barang lalu isi jumlahnya; total = jumlah × harga.
 - **Pengeluaran**: harian, mingguan, atau bulanan, masing-masing dicatat pada tanggalnya. Enter menyimpan, kursor kembali ke kolom nama.
+- **Hari aktif**: atur hari kerja rutin dan tanggal libur di Pengaturan (kalender) atau lewat centang di Input harian.
+- **Mingguan / bulanan**: dibagi rata ke hari aktif pada minggu (Senin-Minggu) / bulan itu. Bagian per hari masuk laporan pada hari yang sudah terisi; sisanya tampil sebagai "belum terbagi". Hapus centang "Bagi rata" pada pengeluaran untuk mencatatnya di tanggalnya saja.
 - **Laporan**: pilih **Jumlah** (total bulan) atau **Harian** (satu tanggal yang sudah diinput). Tab: Dashboard, Presentasi, Laporan resmi (A4 + tanda tangan), Per hari, Per jenis, Kategori & gaji. Unduh Excel atau cetak.
 - **Pengaturan**: tarif per PM, identitas laporan, dan kategori (bisa diubah nama dan klasternya).
 

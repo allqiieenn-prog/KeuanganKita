@@ -4,7 +4,8 @@
 create table kk_settings (
   id int primary key default 1 check (id = 1),
   rate bigint not null default 3000,
-  org_name text, sign_by text, sign_ok text
+  org_name text, sign_by text, sign_ok text,
+  work_days int[] not null default '{1,2,3,4,5,6}' -- hari kerja rutin (0 = Minggu)
 );
 insert into kk_settings default values;
 
@@ -23,7 +24,8 @@ create table kk_employees (
 );
 
 -- jumlah PM per hari (hanya hari yang diinput yang punya baris)
-create table kk_days (date date primary key, pm int);
+-- active: kosong = ikut hari kerja rutin; true/false = pengecualian untuk tanggal itu
+create table kk_days (date date primary key, pm int, active boolean);
 -- kehadiran; gaji disimpan per hari sehingga perubahan gaji tidak mengubah hari yang sudah tercatat
 create table kk_attendance (
   date date not null, employee_id bigint not null references kk_employees(id) on delete cascade,
@@ -33,7 +35,8 @@ create table kk_expenses (
   id bigint generated always as identity primary key, date date not null, name text not null,
   category text not null default 'Lainnya', kind text not null check (kind in ('harian','mingguan','bulanan')),
   amount bigint not null, note text, photo text,
-  qty numeric, unit text, unit_price bigint -- jumlah barang × harga satuan (opsional)
+  qty numeric, unit text, unit_price bigint, -- jumlah barang × harga satuan (opsional)
+  spread boolean not null default true -- mingguan/bulanan dibagi rata ke hari aktif
 );
 
 -- data barang: nama, satuan, harga satuan (dipakai berulang saat input pengeluaran)
