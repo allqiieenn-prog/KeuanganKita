@@ -45,12 +45,12 @@ export function summarize(data, month, only = null) { // only: Set tanggal (lapo
   const filled = new Set([...days.map((x) => x.date), ...attendance.map((a) => a.date), ...data.expenses.filter((e) => !plan.has(e.id) && inScope(e.date)).map((e) => e.date)]);
 
   const byDate = {}, cat = {}, itemMap = {}, counted = {};
-  const row = (d) => byDate[d] || (byDate[d] = { date: d, pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, staff: 0, out: 0, net: 0, saldo: 0 });
+  const row = (d) => byDate[d] || (byDate[d] = { date: d, pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, staff: 0, out: 0, net: 0, saldo: 0, pettyAlloc: 0, pettyUsed: 0, pettyLeft: 0 });
   const addCost = (e, date, amount) => {
     row(date)[e.kind] += amount;
     cat[e.category] = (cat[e.category] || 0) + amount;
     const key = e.category + '|' + e.name, item = itemMap[key] || (itemMap[key] = { name: e.name, category: e.category, amt: 0 });
-    item.amt += amount; counted[e.id] = (counted[e.id] || 0) + amount;
+    item.amt += amount; if (e.id != null) counted[e.id] = (counted[e.id] || 0) + amount;
   };
 
   days.forEach((x) => { const r = row(x.date); r.pm = +x.pm; r.income = r.pm * rate; });
@@ -59,6 +59,15 @@ export function summarize(data, month, only = null) { // only: Set tanggal (lapo
     const p = plan.get(e.id);
     if (!p) { if (inScope(e.date)) addCost(e, e.date, +e.amount); return; }
     p.dates.forEach((d) => { if (filled.has(d)) addCost(e, d, p.share); });
+  });
+
+  /* Petty cash: jatah tetap per hari aktif yang sudah terisi. Belanjanya dicatat dengan tanda "petty".
+     Mode "full": sisa petty cash dihitung sebagai biaya (jatah terpotong penuh). Mode "actual": hanya belanja yang terpakai. */
+  const petty = +data.settings.petty_daily || 0, pettyFull = (data.settings.petty_mode || 'full') === 'full';
+  filled.forEach((d) => {
+    const used = sum(data.expenses.filter((e) => e.petty && e.date === d), (e) => e.amount), alloc = petty > 0 && isActive(d) ? petty : 0;
+    Object.assign(row(d), { pettyAlloc: alloc, pettyUsed: used, pettyLeft: alloc - used });
+    if (pettyFull && alloc > used) addCost({ kind: 'harian', category: 'Petty cash', name: 'Sisa petty cash', id: null }, d, alloc - used);
   });
 
   /* bagian yang belum terbagi karena harinya belum terisi (bulan ini) */
@@ -71,6 +80,7 @@ export function summarize(data, month, only = null) { // only: Set tanggal (lapo
 
   const totals = {
     days: rows.length, pm: sum(rows, (r) => r.pm), income: sum(rows, (r) => r.income), wages: sum(rows, (r) => r.wages), out: sum(rows, (r) => r.out), pending,
+    pettyAlloc: sum(rows, (r) => r.pettyAlloc), pettyUsed: sum(rows, (r) => r.pettyUsed), pettyLeft: sum(rows, (r) => r.pettyLeft),
     ...Object.fromEntries(KINDS.map((k) => [k, sum(rows, (r) => r[k])])),
   };
   totals.net = totals.income - totals.out;

@@ -54,7 +54,7 @@ export async function exportExcel(s = summarize(store.data, store.month), label 
   };
 
   sheet('Ringkasan', 'Laporan Keuangan Kita', [{ h: 'Keterangan', w: 34 }, { h: 'Nilai', w: 24, f: 'rp' }],
-    [['Hari terisi', `${T.days} hari`], ['Total PM', `${T.pm} PM`], ['Dana masuk', T.income], ['Pengeluaran harian', T.harian], ['Pengeluaran mingguan', T.mingguan], ['Pengeluaran bulanan', T.bulanan], ['Gaji pegawai', T.wages], ['Total pengeluaran', T.out], ['Belum terbagi (hari belum terisi)', T.pending]],
+    [['Hari terisi', `${T.days} hari`], ['Total PM', `${T.pm} PM`], ['Dana masuk', T.income], ['Pengeluaran harian', T.harian], ['Pengeluaran mingguan', T.mingguan], ['Pengeluaran bulanan', T.bulanan], ['Gaji pegawai', T.wages], ['Total pengeluaran', T.out], ['Belum terbagi (hari belum terisi)', T.pending], ['Petty cash dialokasikan', T.pettyAlloc], ['Petty cash terpakai', T.pettyUsed]],
     ['SISA DANA', T.net]);
   sheet('Per Hari', 'Rincian Per Hari',
     [{ h: 'Tanggal', w: 13 }, { h: 'PM', w: 9, f: 'n' }, { h: 'Hadir', w: 9, f: 'n' }, { h: 'Dana masuk', w: 16, f: 'rp' }, { h: 'Harian', w: 15, f: 'rp' }, { h: 'Mingguan', w: 15, f: 'rp' }, { h: 'Bulanan', w: 15, f: 'rp' }, { h: 'Gaji', w: 16, f: 'rp' }, { h: 'Total keluar', w: 16, f: 'rp' }, { h: 'Sisa', w: 16, f: 'rp' }, { h: 'Saldo', w: 16, f: 'rp' }],
@@ -63,6 +63,11 @@ export async function exportExcel(s = summarize(store.data, store.month), label 
   const list = [...s.entries].sort((a, b) => (a.date < b.date ? -1 : 1));
   sheet('Pengeluaran', 'Daftar Pengeluaran', [{ h: 'Tanggal', w: 13 }, { h: 'Nama', w: 30 }, { h: 'Kategori', w: 20 }, { h: 'Jenis', w: 13, f: 'c' }, { h: 'Qty', w: 10, f: 'q' }, { h: 'Satuan', w: 12 }, { h: 'Harga satuan', w: 16, f: 'rp' }, { h: 'Total input', w: 18, f: 'rp' }, { h: 'Masuk laporan', w: 18, f: 'rp' }, { h: 'Catatan', w: 30 }],
     list.map((e) => [dmy(e.date), e.name, e.category, e.kind, e.qty ? +e.qty : '', e.unit || '', e.unit_price ? +e.unit_price : '', +e.amount, Math.round(s.counted[e.id] || 0), e.note || '']), ['Total', '', '', '', '', '', '', sum(list, (e) => e.amount), Math.round(sum(list, (e) => s.counted[e.id])), '']);
+  const pettyList = list.filter((e) => e.petty);
+  sheet('Petty Cash', 'Petty Cash Per Hari', [{ h: 'Tanggal', w: 13 }, { h: 'Dialokasikan', w: 18, f: 'rp' }, { h: 'Terpakai', w: 18, f: 'rp' }, { h: 'Sisa', w: 18, f: 'rp' }],
+    s.rows.filter((r) => r.pettyAlloc > 0 || r.pettyUsed > 0).map((r) => [dmy(r.date), r.pettyAlloc, r.pettyUsed, r.pettyLeft]), ['Total', T.pettyAlloc, T.pettyUsed, T.pettyLeft]);
+  sheet('Rincian Petty Cash', 'Belanja Petty Cash', [{ h: 'Tanggal', w: 13 }, { h: 'Barang', w: 30 }, { h: 'Kategori', w: 20 }, { h: 'Qty', w: 10, f: 'q' }, { h: 'Satuan', w: 12 }, { h: 'Harga satuan', w: 16, f: 'rp' }, { h: 'Total', w: 18, f: 'rp' }],
+    pettyList.map((e) => [dmy(e.date), e.name, e.category, e.qty ? +e.qty : '', e.unit || '', e.unit_price ? +e.unit_price : '', +e.amount]), ['Total', '', '', '', '', '', sum(pettyList, (e) => e.amount)]);
   sheet('Kategori', 'Pengeluaran Per Kategori', [{ h: 'Kategori', w: 30 }, { h: 'Total', w: 20, f: 'rp' }], s.byCat.map((c) => [c.name, c.v]), ['Total', T.out]);
   sheet('Gaji Pegawai', 'Gaji Pegawai', [{ h: 'Pegawai', w: 28 }, { h: 'Divisi', w: 20 }, { h: 'Hadir (hari)', w: 14, f: 'n' }, { h: 'Total gaji', w: 20, f: 'rp' }],
     s.byEmp.map((e) => [e.name, store.data.divisions.find((d) => d.id === e.division_id)?.name || '-', e.days, e.total]), ['Total', '', sum(s.byEmp, (e) => e.days), T.wages]);

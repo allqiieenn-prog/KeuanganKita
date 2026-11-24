@@ -5,7 +5,9 @@ create table kk_settings (
   id int primary key default 1 check (id = 1),
   rate bigint not null default 3000,
   org_name text, sign_by text, sign_ok text,
-  work_days int[] not null default '{1,2,3,4,5,6}' -- hari kerja rutin (0 = Minggu)
+  work_days int[] not null default '{1,2,3,4,5,6}', -- hari kerja rutin (0 = Minggu)
+  petty_daily bigint not null default 0,            -- jatah petty cash per hari aktif (0 = tidak dipakai)
+  petty_mode text not null default 'full'           -- full = sisa dihitung biaya; actual = hanya yang terpakai
 );
 insert into kk_settings default values;
 
@@ -36,7 +38,8 @@ create table kk_expenses (
   category text not null default 'Lainnya', kind text not null check (kind in ('harian','mingguan','bulanan')),
   amount bigint not null, note text, photo text,
   qty numeric, unit text, unit_price bigint, -- jumlah barang × harga satuan (opsional)
-  spread boolean not null default true -- mingguan/bulanan dibagi rata ke hari aktif
+  spread boolean not null default true, -- mingguan/bulanan dibagi rata ke hari aktif
+  petty boolean not null default false  -- dibeli dengan petty cash
 );
 
 -- data barang: nama, satuan, harga satuan (dipakai berulang saat input pengeluaran)

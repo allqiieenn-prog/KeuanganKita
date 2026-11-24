@@ -12,8 +12,8 @@ export function render() {
   const { data, date } = store;
   const dayRow = data.days.find((x) => x.date === date), isAct = activeChecker(data)(date);
   const att = new Map(data.attendance.filter((a) => a.date === date).map((a) => [a.employee_id, a]));
-  const day = summarize(data, date.slice(0, 7)).rows.find((r) => r.date === date) || { pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, out: 0, net: 0 };
-  const entries = data.expenses.filter((e) => e.date === date);
+  const day = summarize(data, date.slice(0, 7)).rows.find((r) => r.date === date) || { pm: 0, income: 0, harian: 0, mingguan: 0, bulanan: 0, wages: 0, out: 0, net: 0, pettyAlloc: 0, pettyUsed: 0, pettyLeft: 0 };
+  const entries = data.expenses.filter((e) => e.date === date && !e.petty), pettyList = data.expenses.filter((e) => e.date === date && e.petty);
 
   const groups = data.divisions.map((v, gi) => {
     const people = data.employees.filter((e) => e.division_id === v.id);
@@ -35,6 +35,12 @@ export function render() {
       <section class="card"><h3>${dateLabel(date)}</h3>
         ${line('Dana masuk (' + day.pm + ' PM)', rp(day.income))}${line('Pengeluaran harian', rp(day.harian))}${line('Pengeluaran mingguan', rp(day.mingguan))}${line('Pengeluaran bulanan', rp(day.bulanan))}${line('Gaji pegawai', rp(day.wages))}
         ${line('Sisa hari ini', `<span class="${day.net < 0 ? 'neg' : 'pos'}">${rp(day.net)}</span>`)}<p class="muted note">Angka ini menyesuaikan setelah data disimpan.${isAct ? '' : ' Hari ini nonaktif, jadi tidak ikut pembagian biaya mingguan/bulanan.'}</p></section>
+      <section class="card"><h3>Petty cash ${dm(date)}</h3>
+        ${+data.settings.petty_daily > 0 ? '' : '<p class="muted note">Petty cash harian belum diatur. Isi di Pengaturan.</p>'}
+        ${line('Dialokasikan (otomatis)', rp(day.pettyAlloc))}${line('Terpakai (belanja)', rp(day.pettyUsed))}${line('Sisa petty cash', `<span class="${day.pettyLeft < 0 ? 'neg' : 'pos'}">${rp(day.pettyLeft)}</span>`)}
+        <h4>Catat belanja petty cash</h4>${expenseForm(date, { petty: true })}
+        ${table([{ h: 'Barang' }, { h: 'Kategori' }, { h: 'Jumlah', cls: 'num' }], pettyList.map((e) => [esc(e.name), esc(e.category), rp(e.amount)]), { emptyText: 'Belum ada belanja petty cash hari ini.' })}
+        <p class="muted note">Jatah petty cash dipotong otomatis pada hari aktif yang sudah terisi.</p></section>
       <section class="card"><h3>Tambah pengeluaran ${dm(date)}</h3>${expenseForm(date)}
         ${table([{ h: 'Nama' }, { h: 'Jenis' }, { h: 'Jumlah', cls: 'num' }], entries.map((e) => [esc(e.name), badge(e.kind), rp(e.amount)]), { emptyText: 'Belum ada pengeluaran hari ini.' })}</section>
     </div></div>`;

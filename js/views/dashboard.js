@@ -6,6 +6,16 @@ import { esc, rp, dm, daysIn, sum, monthDays } from '../utils.js';
 
 export const title = 'Dashboard';
 
+const pettyCard = (s, data) => {
+  const T = s.totals, mode = (data.settings.petty_mode || 'full') === 'full' ? 'Sisa dihitung penuh' : 'Hanya yang terpakai';
+  if (!(+data.settings.petty_daily > 0) && !T.pettyUsed) return '';
+  const used = s.entries.filter((e) => e.petty).slice(0, 5), pct = T.pettyAlloc ? Math.round((T.pettyUsed / T.pettyAlloc) * 100) : 0;
+  return `<section class="card" style="margin-top:14px"><div class="card-head"><h3>Petty cash</h3><small class="muted">${mode}</small></div>
+    <div class="stats"><div class="kv"><span>Dialokasikan</span><b>${rp(T.pettyAlloc)}</b></div><div class="kv"><span>Terpakai</span><b>${rp(T.pettyUsed)}</b></div><div class="kv"><span>Sisa</span><b class="${T.pettyLeft < 0 ? 'neg' : 'pos'}">${rp(T.pettyLeft)}</b></div></div>
+    ${progress(pct, 'var(--orange)')}<h4>Belanja petty cash terbaru</h4>
+    <ul class="recent">${used.map((e) => `<li><div><b>${esc(e.name)}</b><small>${dm(e.date)} · ${esc(e.category)}</small></div><div>${rp(e.amount)}</div></li>`).join('') || empty('Belum ada belanja petty cash.')}</ul></section>`;
+};
+
 const stat = (cls, label, value, sub, viz = '') =>
   `<div class="card stat ${cls}"><span class="stat-l">${label}</span><b class="stat-v">${value}</b><div class="stat-f"><small>${sub}</small>${viz}</div></div>`;
 
@@ -33,7 +43,8 @@ export function render() {
       <section class="card"><h3>Rincian jenis</h3>${kinds.map(([l, v, c]) => `<div class="bar-row"><div class="kv"><span>${l}</span><b>${rp(v)}</b></div>${progress(pct(v), c)}</div>`).join('')}${T.pending > 0 ? `<p class="legend-note">Belum terbagi: <b>${rp(T.pending)}</b> (bagian biaya mingguan/bulanan untuk hari yang belum terisi)</p>` : ''}</section>
       <section class="card"><h3>Saldo kumulatif</h3>${lineChart(s.rows.map((r) => ({ label: dm(r.date), v: r.saldo })))}<h4>Transaksi terbaru</h4>
         <ul class="recent">${s.entries.slice(0, 5).map((e) => `<li><div><b>${esc(e.name)}</b><small>${dm(e.date)} · ${esc(e.category)}</small></div><div>${rp(e.amount)}${badge(e.kind)}</div></li>`).join('') || empty('Belum ada transaksi.')}</ul></section>
-    </div>`;
+    </div>
+    ${pettyCard(s, data)}`;
 }
 
 export const actions = {

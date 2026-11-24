@@ -21,15 +21,16 @@ export const expenseFields = () => [
   { n: 'kind', l: 'Jenis', t: 'select', opts: KINDS },
   { n: 'note', l: 'Catatan (opsional)' },
   { n: 'spread', l: 'Bagi rata ke hari aktif (untuk jenis mingguan / bulanan)', t: 'check', def: true },
+  { n: 'petty', l: 'Dibeli dengan petty cash (otomatis jenis harian)', t: 'check', def: false },
 ];
 
 /* nilai kosong disimpan sebagai null */
-export const normalizeExpense = (v) => ({ ...v, qty: v.qty || null, unit: v.unit || null, unit_price: v.unit_price || null, note: v.note || null });
+export const normalizeExpense = (v) => ({ ...v, qty: v.qty || null, unit: v.unit || null, unit_price: v.unit_price || null, note: v.note || null, ...(v.petty ? { kind: 'harian', spread: false } : {}) });
 
 /* saran nama: data barang + nama pengeluaran yang pernah dipakai */
 export const namesList = () => [...new Set([...store.data.items.map((i) => i.name), ...store.data.expenses.map((e) => e.name)])].map((n) => `<option value="${esc(n)}">`).join('');
 
-export const expenseForm = (date) => `<form data-form="expense" class="grid-form">${fieldsHTML(expenseFields(), { date, kind: 'harian' })}
+export const expenseForm = (date, preset = {}) => `<form data-form="expense" class="grid-form">${fieldsHTML(expenseFields(), { date, kind: 'harian', ...preset })}
   <label class="check"><input type="checkbox" name="save_item"> Simpan ke data barang</label><button class="btn primary">Tambah pengeluaran</button></form>`;
 
 /* Total otomatis = jumlah barang × harga satuan (bisa tetap diketik manual bila tanpa qty) */
@@ -66,7 +67,7 @@ const spreadNote = (e, isActive) => {
   const n = spreadDates(e, isActive).length;
   return n ? `Dibagi ke ${n} hari aktif (${rp(e.amount / n)}/hari)` : 'Dicatat di tanggalnya';
 };
-const detail = (e, isActive) => [e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '', spreadNote(e, isActive), esc(e.note || '')].filter(Boolean).join(' · ');
+const detail = (e, isActive) => [e.petty ? 'Petty cash' : '', e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '', spreadNote(e, isActive), esc(e.note || '')].filter(Boolean).join(' · ');
 
 export function render() {
   const { data, month } = store, isActive = activeChecker(data);

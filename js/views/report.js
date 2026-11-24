@@ -8,7 +8,7 @@ import { esc, rp, dm, sum, monthLabel, dateLabel, fmtQty, $ } from '../utils.js'
 
 export const title = 'Laporan';
 
-const TABS = [['dash', 'Dashboard'], ['slide', 'Presentasi'], ['doc', 'Laporan resmi'], ['day', 'Per hari'], ['kind', 'Per jenis'], ['cat', 'Kategori & gaji']];
+const TABS = [['dash', 'Dashboard'], ['slide', 'Presentasi'], ['doc', 'Laporan resmi'], ['day', 'Per hari'], ['kind', 'Per jenis'], ['petty', 'Petty cash'], ['cat', 'Kategori & gaji']];
 let tab = 'dash', scope = 'total', day = null, slide = 0, topN = 10, clusterFilter = -1;
 
 /* Ringkasan sesuai pilihan: seluruh bulan, atau satu tanggal yang sudah diinput */
@@ -64,6 +64,16 @@ const perKind = (s) => ['harian', 'mingguan', 'bulanan'].map((k) => {
   return `<section class="card"><h3>Pengeluaran ${k} ${badge(k)}</h3>${table([{ h: 'Tanggal' }, { h: 'Nama' }, { h: 'Kategori' }, { h: 'Qty × harga' }, { h: 'Total input', cls: 'num' }, { h: 'Masuk laporan', cls: 'num' }], list.map((e) => [dm(e.date), `${esc(e.name)}${k !== 'harian' ? `<br><small class="muted">${s.plan.has(e.id) ? `Dibagi ke ${s.plan.get(e.id).dates.length} hari aktif` : 'Dicatat di tanggalnya'}</small>` : ''}`, esc(e.category), e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '-', rp(e.amount), rp(s.counted[e.id])]), { foot: ['Subtotal', '', '', '', rp(sum(list, (e) => e.amount)), rp(sum(list, (e) => s.counted[e.id]))], emptyText: `Belum ada pengeluaran ${k}.` })}</section>`;
 }).join('');
 
+const perPetty = (s) => {
+  const days = s.rows.filter((r) => r.pettyAlloc > 0 || r.pettyUsed > 0), list = s.entries.filter((e) => e.petty).sort((a, b) => (a.date < b.date ? -1 : 1)), T = s.totals;
+  const mode = (store.data.settings.petty_mode || 'full') === 'full' ? 'Sisa petty cash dihitung sebagai biaya (jatah terpotong penuh).' : 'Hanya belanja yang terpakai dihitung; sisa petty cash dikembalikan.';
+  const left = (v) => `<span class="${v < 0 ? 'neg' : 'pos'}">${rp(v)}</span>`;
+  return `<section class="card"><h3>Petty cash per hari</h3><p class="muted note">${mode}</p>${table([{ h: 'Tanggal' }, { h: 'Dialokasikan', cls: 'num' }, { h: 'Terpakai', cls: 'num' }, { h: 'Sisa', cls: 'num' }],
+      days.map((r) => [dm(r.date), rp(r.pettyAlloc), rp(r.pettyUsed), left(r.pettyLeft)]), { foot: ['Total', rp(T.pettyAlloc), rp(T.pettyUsed), left(T.pettyLeft)], emptyText: 'Belum ada data petty cash.' })}</section>
+    <section class="card"><h3>Rincian belanja petty cash</h3>${table([{ h: 'Tanggal' }, { h: 'Barang' }, { h: 'Kategori' }, { h: 'Qty × harga' }, { h: 'Total', cls: 'num' }],
+      list.map((e) => [dm(e.date), esc(e.name), esc(e.category), e.qty ? `${fmtQty(e.qty)} ${esc(e.unit || '')} × ${rp(e.unit_price)}` : '-', rp(e.amount)]), { foot: ['Total', '', '', '', rp(sum(list, (e) => e.amount))], emptyText: 'Belum ada belanja petty cash.' })}</section>`;
+};
+
 const perCategory = (s) => `<div class="two"><section class="card"><h3>Per kategori</h3>${table([{ h: 'Kategori' }, { h: 'Total', cls: 'num' }, { h: '%', cls: 'num' }], s.byCat.map((c) => [esc(c.name), rp(c.v), pct(c.v, s.totals.out)]), { foot: ['Total', rp(s.totals.out), ''] })}</section>
   <section class="card"><h3>Gaji per divisi</h3>${table([{ h: 'Divisi' }, { h: 'Orang-hari', cls: 'num' }, { h: 'Total', cls: 'num' }], s.byDiv.map((d) => [esc(d.name), d.days, rp(d.total)]), { foot: ['Total', sum(s.byDiv, (d) => d.days), rp(s.totals.wages)] })}</section></div>
   <section class="card"><h3>Gaji per pegawai</h3>${table([{ h: 'Pegawai' }, { h: 'Hadir', cls: 'num' }, { h: 'Total gaji', cls: 'num' }], s.byEmp.map((e) => [esc(e.name), e.days + ' hari', rp(e.total)]), { foot: ['Total', '', rp(s.totals.wages)] })}</section>`;
@@ -77,6 +87,7 @@ export function render() {
     doc: () => `<div class="actions"><button class="btn primary" data-act="printDoc">Cetak laporan resmi (A4)</button><span class="muted note">Nama organisasi dan penandatangan diatur di Pengaturan.</span></div><div class="card paper">${docHTML(m, cur.label, store.data.settings)}</div>`,
     day: () => `<section class="card">${perDay(cur.s)}</section>`,
     kind: () => perKind(cur.s),
+    petty: () => perPetty(cur.s),
     cat: () => perCategory(cur.s),
   }[tab]();
   return toolbar(cur) + body;

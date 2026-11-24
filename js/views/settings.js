@@ -11,6 +11,8 @@ export const title = 'Pengaturan';
 
 const settingFields = [
   { n: 'rate', l: 'Dana per PM per hari (Rp)', t: 'money', req: true },
+  { n: 'petty_daily', l: 'Petty cash per hari (Rp, 0 = tidak dipakai)', t: 'money' },
+  { n: 'petty_mode', l: 'Perhitungan petty cash', t: 'select', opts: [['full', 'Dihitung penuh (sisa tidak dikembalikan)'], ['actual', 'Hanya yang terpakai (sisa dikembalikan)']] },
   { n: 'org_name', l: 'Nama organisasi / perusahaan' },
   { n: 'sign_by', l: 'Nama pembuat laporan' },
   { n: 'sign_ok', l: 'Nama yang mengetahui' },
