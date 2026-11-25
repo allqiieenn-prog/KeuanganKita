@@ -10,6 +10,7 @@ import * as expenses from './views/expenses.js';
 import * as items from './views/items.js';
 import * as staff from './views/staff.js';
 import * as report from './views/report.js';
+import * as forecast from './views/forecast.js';
 import * as settings from './views/settings.js';
 
 /* id halaman -> modul + ikon di menu samping */
@@ -19,6 +20,7 @@ const ROUTES = {
   expenses: { view: expenses, icon: 'M3 7h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12M16 14h3' },
   items: { view: items, icon: 'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8' },
   staff: { view: staff, icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8' },
+  forecast: { view: forecast, icon: 'M3 17l6-6 4 4 8-8M14 7h7v7' },
   report: { view: report, icon: 'M4 20V10M10 20V4M16 20v-8M22 20H2' },
   settings: { view: settings, icon: 'M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M14 4v4M8 10v4M16 16v4' },
 };
@@ -93,6 +95,7 @@ document.addEventListener('change', (e) => {
 document.addEventListener('input', (e) => {
   if (e.target.classList.contains('money')) formatMoneyInput(e.target);
   if (e.target.matches('[data-calc]')) expenses.calcAmount(e.target.form); // total = qty × harga
+  if (e.target.dataset.live) guard(() => actions[e.target.dataset.live]?.(e.target.dataset, e.target, e)); // hasil langsung berubah saat mengetik
 });
 window.addEventListener('hashchange', render);
 

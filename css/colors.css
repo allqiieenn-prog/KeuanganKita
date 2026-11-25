@@ -67,3 +67,4 @@ tbody tr:hover td { background: color-mix(in srgb, var(--purple) 9%, transparent
 .group-head b { color: var(--gc, var(--text)); }
 .staff:has(input[type=checkbox]:checked) { background: color-mix(in srgb, var(--gc, var(--lime)) 15%, transparent); border-color: var(--gc, var(--lime)); }
 .staff input[type=checkbox] { accent-color: var(--gc, var(--lime)); }
+.rail-link[data-route="forecast"] { --c: #3ee0c4; }
